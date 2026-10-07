@@ -1,4 +1,4 @@
-import { LayoutDashboard, Sun, CheckSquare, Calendar, FileText, Settings, Bot, GraduationCap } from "lucide-react";
+import { LayoutDashboard, Sun, CheckSquare, Calendar, FileText, Settings, Bot, GraduationCap, School, BookOpen, NotebookPen } from "lucide-react";
 import { ASSISTANT_NAME } from "@/config";
 
 export interface NavItem {
@@ -29,6 +29,15 @@ export const NAV: NavGroup[] = [
   {
     label: "Business & Projects",
     items: [{ label: "University Plans", href: "/plans", icon: GraduationCap }],
+  },
+  {
+    label: "Academics",
+    items: [
+      { label: "School", href: "/academics/school", icon: School },
+      { label: "University Applications", href: "/academics/applications", icon: GraduationCap },
+      { label: "Exams", href: "/academics/exams", icon: BookOpen },
+      { label: "Notes", href: "/academics/notes", icon: NotebookPen },
+    ],
   },
   {
     label: "System",

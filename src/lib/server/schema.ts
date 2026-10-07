@@ -81,4 +81,54 @@ export const SCHEMA: string[] = [
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
   )`,
+
+  /* ---------------- academics ---------------- */
+
+  // School subjects. The next assessment's date also puts the subject on the Exams page.
+  `create table if not exists subjects (
+    id uuid primary key default gen_random_uuid(),
+    name text not null,
+    level text not null default 'SL',
+    color text not null default '#7a5fb0',
+    current_grade text not null default '',
+    predicted_grade text not null default '',
+    next_assessment text not null default '',
+    next_assessment_date date,
+    sort int not null default 0,
+    created_at timestamptz not null default now()
+  )`,
+
+  // Revision topics, shared by School and Exams
+  `create table if not exists subject_topics (
+    id uuid primary key default gen_random_uuid(),
+    subject_id uuid not null references subjects(id) on delete cascade,
+    title text not null,
+    status text not null default 'not_started' check (status in ('not_started','learning','needs_practice','confident','mastered')),
+    created_at timestamptz not null default now()
+  )`,
+  `create index if not exists subject_topics_subject_idx on subject_topics (subject_id)`,
+
+  // University applications. steps = [{id,title,done}]
+  `create table if not exists uni_applications (
+    id uuid primary key default gen_random_uuid(),
+    university text not null,
+    program text not null default '',
+    code text not null default '',
+    region text not null default 'Other',
+    tier text not null default 'target' check (tier in ('safety','target','reach')),
+    deadline date,
+    steps jsonb not null default '[]'::jsonb,
+    notes text not null default '',
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+  )`,
+
+  `create table if not exists academic_notes (
+    id uuid primary key default gen_random_uuid(),
+    title text not null default 'Untitled note',
+    body text not null default '',
+    subject_id uuid references subjects(id) on delete set null,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+  )`,
 ];

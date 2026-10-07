@@ -3,6 +3,8 @@ import { requireSession } from "@/lib/server/auth";
 import { AiError, complete, looseJson, modelStatus, type ChatMsg } from "@/lib/server/ai";
 import { getSetting, listOpenTasks, setSetting } from "@/lib/server/data";
 import { listDocs } from "@/lib/server/docs";
+import { listApplications, listSubjects } from "@/lib/server/academics";
+import { topicStatus } from "@/lib/academics";
 import { cleanSections, getPlan, listPlans, savePlan, savePlanChat } from "@/lib/server/plans";
 import { sectionId, type PlanChatMsg, type PlanSection } from "@/lib/plan-template";
 import { formatDue, TZ } from "@/lib/time";
@@ -194,11 +196,13 @@ async function planChat(modelId: string, b: Record<string, unknown>) {
 async function assistant(modelId: string, b: Record<string, unknown>) {
   const message = str(b.message, 4000).trim();
   if (!message) throw new AiError("Type a message first.");
-  const [history, tasks, plans, docs] = await Promise.all([
+  const [history, tasks, plans, docs, subjects, applications] = await Promise.all([
     getSetting<AssistantMsg[]>("assistant_chat", []),
     listOpenTasks(),
     listPlans(),
     listDocs(),
+    listSubjects(),
+    listApplications(),
   ]);
 
   const taskLines = tasks.slice(0, 40).map((t) => `- ${t.title} [${projectByKey(t.project)?.name ?? t.project}, ${t.priority}${t.deadline ? `, due ${formatDue(t.deadline, t.deadlineHasTime)}` : ""}]`);
@@ -210,6 +214,11 @@ ${taskLines.join("\n") || "(none)"}
 
 His University Business Plans: ${plans.map((p) => `${p.title} (${p.filled}/${p.total} sections written)`).join("; ") || "(none yet)"}
 His documents: ${docs.slice(0, 20).map((d) => d.title).join("; ") || "(none yet)"}
+
+His school subjects:
+${subjects.map((s) => `- ${s.name} ${s.level}: grade ${s.currentGrade || "?"}, predicted ${s.predictedGrade || "?"}${s.nextAssessment ? `; next: ${s.nextAssessment}${s.nextAssessmentDate ? ` on ${s.nextAssessmentDate}` : ""}` : ""}; topics: ${s.topics.map((t) => `${t.title} (${topicStatus(t.status).label.toLowerCase()})`).join(", ") || "none"}`).join("\n") || "(none yet)"}
+
+His university applications: ${applications.map((a) => `${a.university}${a.program ? ` (${a.program})` : ""}, ${a.tier}, deadline ${a.deadline ?? "not set"}, ${a.steps.filter((x) => x.done).length}/${a.steps.length} steps done`).join("; ") || "(none yet)"}
 
 Help with anything: planning his day, studying, writing, research, business ideas, money and decisions. Be direct and practical, like a sharp friend who wants him to win. Keep answers short unless he asks for depth. Use '- ' bullets for lists. You can see his tasks above but can't change them; when something should become a task, say so and he can press C to capture it. ${STYLE}`;
 
