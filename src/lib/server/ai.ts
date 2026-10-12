@@ -12,7 +12,21 @@ export interface AiResult {
   text: string;
   sources: string[];
   via: "direct" | "openrouter";
+  /** Token counts as reported by the provider (0 when it doesn't say) */
+  usage: { input: number; output: number };
 }
+
+export interface CompleteOptions {
+  /** Longest answer allowed, in tokens (Anthropic needs this; others use it as max_tokens) */
+  maxTokens?: number;
+}
+
+type Usage = AiResult["usage"];
+const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : 0);
+
+// Test-only: when running locally (never on Vercel) EDGE_TEST_ORIGIN sends every provider call to a mock server.
+const testOrigin = !process.env.VERCEL && process.env.EDGE_TEST_ORIGIN ? process.env.EDGE_TEST_ORIGIN : "";
+const target = (url: string) => (testOrigin ? `${testOrigin}/${url.replace(/^https?:\/\//, "")}` : url);
 
 export class AiError extends Error {}
 
@@ -30,6 +44,12 @@ function route(m: AiModel): "direct" | "openrouter" | null {
   if (env("OPENROUTER_API_KEY")) return "openrouter";
   return null;
 }
+
+/** Whether a model can run right now (its own key or OpenRouter is set) */
+export const modelReady = (modelId: string) => {
+  const m = AI_MODELS.find((x) => x.id === modelId);
+  return m ? route(m) !== null : false;
+};
 
 /** The model list with whether each can run right now. Safe to send to the browser (no keys). */
 export function modelStatus() {
@@ -64,7 +84,7 @@ function explain(status: number, body: unknown, who: string) {
 async function post(url: string, headers: Record<string, string>, body: unknown, who: string) {
   let res: Response;
   try {
-    res = await fetch(url, {
+    res = await fetch(target(url), {
       method: "POST",
       headers: { "Content-Type": "application/json", ...headers },
       body: JSON.stringify(body),
@@ -79,8 +99,8 @@ async function post(url: string, headers: Record<string, string>, body: unknown,
 }
 
 /** OpenAI, Gemini, Perplexity and OpenRouter all speak the OpenAI chat-completions format. */
-async function openaiStyle(url: string, key: string, model: string, system: string, messages: ChatMsg[], who: string, extra: Record<string, string> = {}) {
-  const j = await post(url, { Authorization: `Bearer ${key}`, ...extra }, { model, messages: [{ role: "system", content: system }, ...messages] }, who);
+async function openaiStyle(url: string, key: string, model: string, system: string, messages: ChatMsg[], who: string, extra: Record<string, string> = {}, maxTokens?: number) {
+  const j = await post(url, { Authorization: `Bearer ${key}`, ...extra }, { model, messages: [{ role: "system", content: system }, ...messages], ...(maxTokens ? { max_tokens: maxTokens } : {}) }, who);
   const choice = (j.choices as { message?: { content?: unknown; annotations?: { url_citation?: { url?: string } }[] } }[] | undefined)?.[0];
   const content = choice?.message?.content;
   const text = typeof content === "string" ? content : Array.isArray(content) ? content.map((p: { text?: string }) => p?.text ?? "").join("") : "";
@@ -89,38 +109,41 @@ async function openaiStyle(url: string, key: string, model: string, system: stri
     ...((j.search_results as { url?: string }[] | undefined) ?? []).map((r) => r.url ?? ""),
     ...(choice?.message?.annotations ?? []).map((a) => a?.url_citation?.url ?? ""),
   ].filter((u, i, all) => u && all.indexOf(u) === i);
-  return { text, sources };
+  const u = j.usage as { prompt_tokens?: number; completion_tokens?: number } | undefined;
+  return { text, sources, usage: { input: num(u?.prompt_tokens), output: num(u?.completion_tokens) } as Usage };
 }
 
-async function anthropic(key: string, model: string, system: string, messages: ChatMsg[]) {
+async function anthropic(key: string, model: string, system: string, messages: ChatMsg[], maxTokens = 8000) {
   const j = await post(
     "https://api.anthropic.com/v1/messages",
     { "x-api-key": key, "anthropic-version": "2023-06-01" },
-    { model, max_tokens: 8000, system, messages },
+    { model, max_tokens: maxTokens, system, messages },
     "Anthropic"
   );
   const text = ((j.content as { type: string; text?: string }[] | undefined) ?? []).filter((b) => b.type === "text").map((b) => b.text ?? "").join("");
-  return { text, sources: [] as string[] };
+  const u = j.usage as { input_tokens?: number; output_tokens?: number } | undefined;
+  return { text, sources: [] as string[], usage: { input: num(u?.input_tokens), output: num(u?.output_tokens) } as Usage };
 }
 
-export async function complete(modelId: string, system: string, messages: ChatMsg[]): Promise<AiResult> {
+export async function complete(modelId: string, system: string, messages: ChatMsg[], opts: CompleteOptions = {}): Promise<AiResult> {
   const m = AI_MODELS.find((x) => x.id === modelId);
   if (!m) throw new AiError("Unknown model.");
   const via = route(m);
   if (!via) throw new AiError(`${m.label} isn't connected yet. Add ${KEY_ENV[m.provider]} or OPENROUTER_API_KEY in Vercel, then redeploy.`);
   const msgs = normalize(messages);
 
-  let out: { text: string; sources: string[] };
+  const mt = opts.maxTokens;
+  let out: { text: string; sources: string[]; usage: Usage };
   if (via === "openrouter") {
-    out = await openaiStyle("https://openrouter.ai/api/v1/chat/completions", env("OPENROUTER_API_KEY"), m.openrouter, system, msgs, "OpenRouter", { "X-Title": "FADEEL OS" });
+    out = await openaiStyle("https://openrouter.ai/api/v1/chat/completions", env("OPENROUTER_API_KEY"), m.openrouter, system, msgs, "OpenRouter", { "X-Title": "FADEEL OS" }, mt);
   } else if (m.provider === "anthropic") {
-    out = await anthropic(env(KEY_ENV.anthropic), m.model, system, msgs);
+    out = await anthropic(env(KEY_ENV.anthropic), m.model, system, msgs, mt);
   } else if (m.provider === "openai") {
-    out = await openaiStyle("https://api.openai.com/v1/chat/completions", env(KEY_ENV.openai), m.model, system, msgs, "OpenAI");
+    out = await openaiStyle("https://api.openai.com/v1/chat/completions", env(KEY_ENV.openai), m.model, system, msgs, "OpenAI", {}, mt);
   } else if (m.provider === "google") {
-    out = await openaiStyle("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", env(KEY_ENV.google), m.model, system, msgs, "Google Gemini");
+    out = await openaiStyle("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", env(KEY_ENV.google), m.model, system, msgs, "Google Gemini", {}, mt);
   } else {
-    out = await openaiStyle("https://api.perplexity.ai/chat/completions", env(KEY_ENV.perplexity), m.model, system, msgs, "Perplexity");
+    out = await openaiStyle("https://api.perplexity.ai/chat/completions", env(KEY_ENV.perplexity), m.model, system, msgs, "Perplexity", {}, mt);
   }
   if (!out.text.trim()) throw new AiError(`${m.label} sent back an empty answer. Try again or pick another model.`);
   return { ...out, via };

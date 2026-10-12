@@ -1,4 +1,4 @@
-import { LayoutDashboard, Sun, CheckSquare, Calendar, FileText, Settings, Bot, GraduationCap, School, BookOpen, NotebookPen } from "lucide-react";
+import { LayoutDashboard, Sun, CheckSquare, Calendar, FileText, Settings, Bot, GraduationCap, School, BookOpen, NotebookPen, Zap } from "lucide-react";
 import { ASSISTANT_NAME } from "@/config";
 
 export interface NavItem {
@@ -19,6 +19,7 @@ export const NAV: NavGroup[] = [
     label: "Command",
     items: [
       { label: "Home", href: "/home", icon: LayoutDashboard },
+      { label: "Daily Edge", href: "/edge", icon: Zap },
       { label: "Today", href: "/today", icon: Sun },
       { label: "Tasks", href: "/tasks", icon: CheckSquare },
       { label: "Calendar", href: "/calendar", icon: Calendar },
@@ -47,7 +48,7 @@ export const NAV: NavGroup[] = [
 
 export const NAV_ITEMS = NAV.flatMap((g) => g.items);
 
-/** The phone tab bar has room for five */
-export const MOBILE_NAV = ["/home", "/tasks", "/assistant", "/docs", "/plans"].map((h) => NAV_ITEMS.find((i) => i.href === h)!);
+/** The phone tab bar (six fit at phone width) */
+export const MOBILE_NAV = ["/home", "/edge", "/tasks", "/assistant", "/docs", "/plans"].map((h) => NAV_ITEMS.find((i) => i.href === h)!);
 
 export const isActive = (pathname: string, href: string) => pathname === href || pathname.startsWith(href + "/");

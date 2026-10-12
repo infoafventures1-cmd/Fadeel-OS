@@ -8,7 +8,8 @@ Fadeel's private command center, built on the same base as AVI OS.
 - **Assistant**: an AI chat that can see open tasks, plans and documents. Also opens from the round button in the corner of every page
 - **Documents**: an autosaving writing space with an **AI help** panel (Improve, Shorten, Expand, Fix grammar, More formal, Simpler, Continue writing, Give feedback, or any instruction)
 - **University Plans**: one business plan doc per idea, with an AI co-writer beside it that writes straight into the plan, with undo
-- **Settings**: the weekly timetable and the AI models, with a Test button for each
+- **Daily Edge**: a researched 20-minute daily briefing on AI in finance, finance fundamentals, AI business economics and African fintech, with sources, dates, evidence labels, a concept, a video and an exercise, plus Explore, Saved and Learning History (takeaways and spaced recall)
+- **Settings**: the weekly timetable, the AI models with a Test button for each, and Daily Edge (topics, limits, spending cap, sources, run log)
 
 Every AI panel has a model picker: **Claude** (Sonnet, Opus, Haiku), **ChatGPT**, **Gemini** and **Perplexity** (which searches the web and cites sources). All of it happens on this site. The API keys stay on the server and never reach the browser.
 
@@ -20,6 +21,20 @@ Every AI panel has a model picker: **Claude** (Sonnet, Opus, Haiku), **ChatGPT**
 4. **Password**: in *Settings › Environment Variables* add `DASHBOARD_PASSCODE` with a long password.
 5. **AI**: in the same place add `OPENROUTER_API_KEY` (one key from openrouter.ai/keys runs every model; you add credit and pay per use). You can add each company's own key instead or as well: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, `PERPLEXITY_API_KEY`.
 6. **Redeploy**: *Deployments › ⋯ › Redeploy*, open the site, sign in, then go to *Settings › AI models* and press **Test** on each model.
+
+## Daily Edge setup
+
+1. In Vercel › Settings › Environment Variables add:
+   - `CRON_SECRET`: 16+ random characters. Vercel Cron sends it to `/api/edge/cron`; without it the daily run is disabled.
+   - `BRAVE_SEARCH_API_KEY` (recommended): web search for Reuters, Bloomberg, FT, The Batch, IMF, CBK and filings. Brave gives $5 of free credit a month (about 1,000 searches); Daily Edge uses about 12 a day.
+   - `YOUTUBE_API_KEY` (optional): video lengths, and finds Y Combinator's channel ID from its handle.
+   - An AI key (`OPENROUTER_API_KEY` or `ANTHROPIC_API_KEY`) is needed for the briefing itself.
+2. Redeploy, then open Settings › Daily Edge and press **Check feeds and channels now**.
+3. Press **Refresh now** on the Daily Edge page for the first briefing.
+
+**Schedule.** `vercel.json` runs the research at 03:30 UTC (06:30 in Nairobi). On Vercel's free Hobby plan, cron jobs run once a day somewhere within the scheduled hour (06:00–06:59 Nairobi); on Pro they run at the exact minute. If the run hasn't happened by your preferred time, opening Daily Edge starts it. Each run is limited to 300 seconds on Hobby; a run that is cut off resumes from its last finished stage.
+
+**How a run works** (`src/lib/server/edge/`): discover (RSS, Brave Search, YouTube channel feeds) → triage (a cheap model scores relevance and groups reports of the same event) → retrieve (full text for the shortlist only; paywalled sites are never fetched) → synthesize (the briefing, from retrieved text only) → grounding check (statements with figures, quotes or dates not in the sources are removed) → store. Unit checks: `npx tsx tests/edge.test.ts`.
 
 ## Make it yours
 

@@ -3,15 +3,21 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { SectionHeader } from "@/components/ui/section-header";
 import { TimetableEditor } from "@/components/settings/timetable-editor";
 import { AiSettings } from "@/components/settings/ai-settings";
+import { EdgeSettings } from "@/components/settings/edge-settings";
+import { listSources } from "@/lib/server/edge/sources";
+import { getEdgeSettings, usageSummary } from "@/lib/server/edge/usage";
+import { edgeCredentials } from "@/lib/server/edge/status";
 import { modelStatus } from "@/lib/server/ai";
 import { listTimetable } from "@/lib/server/data";
 import { isoWeekday, localDate } from "@/lib/time";
 import { APP_NAME, OWNER, PROJECTS, TIMEZONE, WEATHER } from "@/config";
 
 export const dynamic = "force-dynamic";
+// "Check feeds and channels now" can take a while
+export const maxDuration = 120;
 
 export default async function SettingsPage() {
-  const slots = await listTimetable();
+  const [slots, edgeSettings, sources, usage, creds] = await Promise.all([listTimetable(), getEdgeSettings(), listSources(), usageSummary(), edgeCredentials()]);
   const profile = [
     ["Dashboard name", APP_NAME],
     ["Name", OWNER.fullName],
@@ -61,6 +67,21 @@ export default async function SettingsPage() {
             <AiSettings models={modelStatus()} />
           </div>
         </GlassCard>
+      </div>
+
+      <div id="edge" className="scroll-mt-24">
+        <SectionHeader title="Daily Edge" subtitle="Topics, schedule, research limits, spending cap, sources and run history" />
+        <EdgeSettings
+          settings={edgeSettings}
+          creds={creds}
+          models={modelStatus().map((m) => ({ id: m.id, label: m.label, ready: m.ready }))}
+          usage={usage}
+          sources={sources.map((x) => ({
+            id: x.id, name: x.name, kind: x.kind, url: x.url, site: x.site, enabled: x.enabled, custom: x.custom,
+            lastStatus: x.lastStatus, lastError: x.lastError, lastItems: x.lastItems, checkedAt: x.checkedAt, verifiedAt: x.verifiedAt,
+            note: x.meta?.note, channelId: x.meta?.channelId, idSource: x.meta?.idSource,
+          }))}
+        />
       </div>
 
       <div>

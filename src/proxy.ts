@@ -12,6 +12,8 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/setup", request.url));
   }
   if (pathname === "/login") return NextResponse.next();
+  // Daily Edge's scheduler endpoint authenticates itself with CRON_SECRET (Vercel Cron has no session cookie)
+  if (pathname === "/api/edge/cron") return NextResponse.next();
   if (verifySessionToken(request.cookies.get(SESSION_COOKIE)?.value)) return NextResponse.next();
 
   if (pathname.startsWith("/api/")) {

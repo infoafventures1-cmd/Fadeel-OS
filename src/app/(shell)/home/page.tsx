@@ -5,6 +5,7 @@ import { Workload } from "@/components/home/workload";
 import { TodayPreview } from "@/components/home/today-preview";
 import { ProjectHealthStrip } from "@/components/home/project-health-strip";
 import { QuickLinksGrid } from "@/components/home/quick-links-grid";
+import { DailyEdgeCard } from "@/components/home/daily-edge-card";
 import { getHomeData, getWeather } from "@/lib/server/home";
 
 export const dynamic = "force-dynamic";
@@ -23,6 +24,7 @@ export default async function HomePage() {
           <QuickLinksGrid />
         </div>
         <div className="min-w-0 space-y-6">
+          <DailyEdgeCard />
           <Workload stats={home.stats} />
           <TodayPreview blocks={home.timeline.blocks} planned={home.timeline.planned} hasTimetable={home.timeline.hasTimetable} />
         </div>
