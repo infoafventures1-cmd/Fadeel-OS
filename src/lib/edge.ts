@@ -72,7 +72,7 @@ export const DEFAULT_EDGE_SETTINGS: EdgeSettings = {
   maxSearchQueries: 12,
   maxCandidates: 40,
   maxRetrieve: 10,
-  monthlyCapUsd: 5,
+  monthlyCapUsd: 8,
   synthModel: "claude",
   triageModel: "claude-haiku",
   weekly: true,
