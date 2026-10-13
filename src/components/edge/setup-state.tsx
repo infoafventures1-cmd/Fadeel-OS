@@ -6,7 +6,7 @@ import type { EdgeCredentials } from "@/lib/server/edge/status";
 /** Honest setup-required state: what works now, what each missing key adds. No sample news is ever shown. */
 export function SetupState({ creds }: { creds: EdgeCredentials }) {
   const rows: [boolean, string, string][] = [
-    [creds.ai, "AI model for the briefing", "OPENROUTER_API_KEY (or ANTHROPIC_API_KEY). Without it, discovered articles still appear in Explore, but no briefing is written."],
+    [creds.ai, "AI model for the briefing", "GEMINI_API_KEY (free from aistudio.google.com), or OPENROUTER_API_KEY / ANTHROPIC_API_KEY with a paid model chosen in Settings. Without one, discovered articles still appear in Explore, but no briefing is written."],
     [creds.search, "Web search (Brave Search API)", "BRAVE_SEARCH_API_KEY. Adds Reuters, Bloomberg, FT, The Batch, IMF, CBK and filings. Without it, only the RSS feeds and YouTube channels are used."],
     [creds.youtube, "YouTube Data API (optional)", "YOUTUBE_API_KEY. Adds video lengths and finds Y Combinator's channel from its handle. Channel feeds work without it."],
     [creds.cron, "Daily schedule", "CRON_SECRET (16+ random characters). Lets Vercel run the research every morning while your browser is closed."],

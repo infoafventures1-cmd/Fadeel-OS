@@ -141,6 +141,14 @@ export function EdgeSettings({ settings, sources, usage, creds, models }: { sett
           </div>
         </div>
 
+        <label className="flex items-start gap-2 text-[12.5px]">
+          <input type="checkbox" checked={s.geminiFreeTier} onChange={(e) => set("geminiFreeTier", e.target.checked)} className="mt-0.5 accent-[var(--accent)]" />
+          <span>
+            My Gemini key is on Google&apos;s free tier: count Gemini calls as $0
+            <span className="block text-[11.5px] text-muted-2">Only for calls through your own GEMINI_API_KEY. Free-tier limits (roughly 100–250 requests a day) are far above Daily Edge&apos;s 2–5 calls.</span>
+          </span>
+        </label>
+
         <label className="flex items-center gap-2 text-[12.5px]">
           <input type="checkbox" checked={s.weekly} onChange={(e) => set("weekly", e.target.checked)} className="accent-[var(--accent)]" />
           Weekly synthesis every Sunday (three connections, one disagreement, one hypothesis, one experiment)

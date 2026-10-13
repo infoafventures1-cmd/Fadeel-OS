@@ -45,7 +45,12 @@ export async function recordUsage(u: { provider: string; purpose: string; units?
   if (u.jobId) await sql`update edge_jobs set cost_usd = cost_usd + ${u.costUsd} where id = ${u.jobId}`;
 }
 
-export function aiCost(modelId: string, input: number, output: number) {
+/** Gemini called directly with your own key on Google's free tier costs nothing */
+export const isFreeCall = (modelId: string, s: EdgeSettings) =>
+  s.geminiFreeTier && AI_MODELS.find((x) => x.id === modelId)?.provider === "google" && Boolean((process.env.GEMINI_API_KEY ?? "").trim());
+
+export function aiCost(modelId: string, input: number, output: number, free = false) {
+  if (free) return 0;
   const m = AI_MODELS.find((x) => x.id === modelId);
   const [pi, po] = (m && PRICES[m.model]) || FALLBACK_PRICE;
   return (input * pi + output * po) / 1_000_000;
@@ -54,11 +59,12 @@ export function aiCost(modelId: string, input: number, output: number) {
 /** An AI call with the cap checked before and the cost recorded after. Estimates input from length when the provider doesn't report it. */
 export async function meteredComplete(modelId: string, purpose: string, system: string, messages: ChatMsg[], opts: { maxTokens: number; jobId?: string | null }) {
   const approxIn = Math.ceil((system.length + messages.reduce((n, m) => n + m.content.length, 0)) / 3.5);
-  await assertBudget(aiCost(modelId, approxIn, opts.maxTokens));
+  const free = isFreeCall(modelId, await getEdgeSettings());
+  await assertBudget(aiCost(modelId, approxIn, opts.maxTokens, free));
   const r = await complete(modelId, system, messages, { maxTokens: opts.maxTokens });
   const input = r.usage.input || approxIn;
   const output = r.usage.output || Math.ceil(r.text.length / 3.5);
-  await recordUsage({ provider: `ai:${modelId}`, purpose, input, output, costUsd: aiCost(modelId, input, output), jobId: opts.jobId });
+  await recordUsage({ provider: `ai:${modelId}`, purpose, input, output, costUsd: aiCost(modelId, input, output, free), jobId: opts.jobId });
   return r;
 }
 

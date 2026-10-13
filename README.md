@@ -28,7 +28,7 @@ Every AI panel has a model picker: **Claude** (Sonnet, Opus, Haiku), **ChatGPT**
    - `CRON_SECRET`: 16+ random characters. Vercel Cron sends it to `/api/edge/cron`; without it the daily run is disabled.
    - `BRAVE_SEARCH_API_KEY` (recommended): web search for Reuters, Bloomberg, FT, The Batch, IMF, CBK and filings. Brave gives $5 of free credit a month (about 1,000 searches); Daily Edge uses about 12 a day.
    - `YOUTUBE_API_KEY` (optional): video lengths, and finds Y Combinator's channel ID from its handle.
-   - An AI key (`OPENROUTER_API_KEY` or `ANTHROPIC_API_KEY`) is needed for the briefing itself.
+   - An AI key is needed for the briefing itself. Free: `GEMINI_API_KEY` from aistudio.google.com (Daily Edge uses Gemini Flash by default and counts free-tier calls as $0). Paid: `OPENROUTER_API_KEY` or `ANTHROPIC_API_KEY`, then pick Claude in Settings › Daily Edge.
 2. Redeploy, then open Settings › Daily Edge and press **Check feeds and channels now**.
 3. Press **Refresh now** on the Daily Edge page for the first briefing.
 

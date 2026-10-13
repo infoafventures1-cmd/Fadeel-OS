@@ -118,6 +118,7 @@ export async function saveEdgeSettingsAction(input: EdgeSettings) {
     synthModel: modelIds.includes(input.synthModel) ? input.synthModel : d.synthModel,
     triageModel: modelIds.includes(input.triageModel) ? input.triageModel : d.triageModel,
     weekly: Boolean(input.weekly),
+    geminiFreeTier: Boolean(input.geminiFreeTier),
   };
   await saveEdgeSettings(s);
   refresh();

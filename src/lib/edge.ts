@@ -64,6 +64,8 @@ export interface EdgeSettings {
   synthModel: string;
   triageModel: string;
   weekly: boolean;
+  /** Calls made with your own GEMINI_API_KEY on Google's free tier count as $0 toward the cap */
+  geminiFreeTier: boolean;
 }
 
 export const DEFAULT_EDGE_SETTINGS: EdgeSettings = {
@@ -73,9 +75,11 @@ export const DEFAULT_EDGE_SETTINGS: EdgeSettings = {
   maxCandidates: 40,
   maxRetrieve: 10,
   monthlyCapUsd: 8,
-  synthModel: "claude",
-  triageModel: "claude-haiku",
+  // Gemini Flash on Google's free tier keeps Daily Edge at $0 (about 2 AI calls a day)
+  synthModel: "gemini",
+  triageModel: "gemini",
   weekly: true,
+  geminiFreeTier: true,
 };
 
 /** How much of an item we actually read. Shown on every card so nothing implies more than was retrieved. */
