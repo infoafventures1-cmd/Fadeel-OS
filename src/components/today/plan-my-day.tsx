@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import { Wand2, RotateCcw, Save, SkipForward, Settings2, AlertTriangle } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { DayTimeline } from "@/components/today/day-timeline";
@@ -157,9 +156,9 @@ export function PlanMyDay({ today, window, hasSaved, hasTimetable }: { today: st
         </p>
       )}
 
-      <AnimatePresence>
+      <>
         {plan && (
-          <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="mt-4 space-y-4">
+          <div className="anim-rise mt-4 space-y-4">
             <div className="flex flex-wrap items-center gap-2 font-mono text-[11.5px]">
               <span className="rounded-lg border border-hairline px-2.5 py-1 text-muted">{hm(plan.freeMinutes)} free</span>
               <span className="rounded-lg border border-accent/30 px-2.5 py-1 text-accent">{hm(plan.focusMinutes)} planned</span>
@@ -221,9 +220,9 @@ export function PlanMyDay({ today, window, hasSaved, hasTimetable }: { today: st
                 <Save size={13} /> {saved ? "Saved" : `Save as ${plan.day === today ? "today's" : "tomorrow's"} plan`}
               </button>
             )}
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
+      </>
     </GlassCard>
   );
 }

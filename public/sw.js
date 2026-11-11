@@ -3,7 +3,7 @@
 // - Pages: always fetched fresh when online; the last good copy is kept and shown when offline.
 // - Never cached: API calls, sign-in pages, and anything that isn't a plain GET.
 // - Signing out clears the saved pages from the device.
-const VERSION = "v2";
+const VERSION = "v3";
 const STATIC = `fos-static-${VERSION}`;
 const PAGES = `fos-pages-${VERSION}`;
 const OFFLINE = "/offline.html";
@@ -101,15 +101,25 @@ self.addEventListener("fetch", (event) => {
 self.addEventListener("message", (event) => {
   const msg = event.data || {};
   if (msg.type === "warm" && Array.isArray(msg.paths)) {
+    // one at a time with short pauses, so it never competes with what you're doing in the app
+    const saveOne = async (p) => {
+      try {
+        if (/\.(png|jpg|jpeg|svg|webp)$/.test(p)) {
+          const res = await fetch(p, { credentials: "same-origin" });
+          if (cacheable(res)) await (await caches.open(STATIC)).put(p, res);
+        } else {
+          const res = await fetch(p, { credentials: "same-origin", headers: { Accept: "text/html" } });
+          await savePage(new URL(p, self.location.origin).href, res);
+        }
+      } catch {}
+    };
     event.waitUntil(
-      Promise.all(
-        msg.paths.map((p) =>
-          /\.(png|jpg|jpeg|svg|webp)$/.test(p)
-            ? fetch(p, { credentials: "same-origin" }).then((res) => cacheable(res) && caches.open(STATIC).then((c) => c.put(p, res)))
-            : fetch(p, { credentials: "same-origin", headers: { Accept: "text/html" } }).then((res) => savePage(new URL(p, self.location.origin).href, res))
-            .catch(() => {})
-        )
-      )
+      (async () => {
+        for (const p of msg.paths) {
+          await new Promise((r) => setTimeout(r, 250));
+          await saveOne(p);
+        }
+      })()
     );
   }
   if (msg.type === "clear") event.waitUntil(caches.delete(PAGES));

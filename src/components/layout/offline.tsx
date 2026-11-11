@@ -6,7 +6,7 @@ import { CloudUpload, Loader2, WifiOff } from "lucide-react";
 import { flush, outbox } from "@/lib/offline/outbox";
 import { runStored } from "@/lib/offline/actions";
 
-// Pages saved for offline use whenever the app is open with internet (at most every 30 minutes)
+// Pages saved for offline use whenever the app is open with internet (at most every 2 hours)
 const WARM = [
   "/home", "/edge", "/edge?tab=explore", "/edge?tab=saved", "/edge?tab=history", "/today", "/tasks", "/calendar",
   "/docs", "/plans", "/assistant", "/academics/school", "/academics/applications", "/academics/exams", "/academics/notes", "/settings",
@@ -50,13 +50,16 @@ export function OfflineSupport() {
       try {
         last = Number(localStorage.getItem(WARM_KEY) ?? 0);
       } catch {}
-      if (Date.now() - last < 30 * 60_000 && !forceWarm) return;
+      // every 2 hours at most, and never in Low Data Mode
+      const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+      if ((Date.now() - last < 2 * 60 * 60_000 || saveData) && !forceWarm) return;
       forceWarm = false;
       try {
         localStorage.setItem(WARM_KEY, String(Date.now()));
       } catch {}
       // after the page has settled, so it doesn't compete with what you're looking at
-      setTimeout(() => sw.postMessage({ type: "warm", paths: WARM }), 4000);
+      const idle = (window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => void }).requestIdleCallback;
+      setTimeout(() => (idle ? idle(() => sw.postMessage({ type: "warm", paths: WARM }), { timeout: 10_000 }) : sw.postMessage({ type: "warm", paths: WARM })), 8000);
     });
   }, [pathname]);
   return null;

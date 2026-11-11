@@ -102,7 +102,7 @@ export function MobileNav() {
     <>
       {open && (
         <div className="fixed inset-0 z-[60] lg:hidden" role="dialog" aria-modal="true" aria-label="All pages">
-          <button aria-label="Close" onClick={() => setOpen(false)} className="absolute inset-0 bg-tint/30 backdrop-blur-[2px]" />
+          <button aria-label="Close" onClick={() => setOpen(false)} className="absolute inset-0 bg-tint/30" />
           <div className="scrollbar-thin absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-2xl border-t border-hairline bg-background px-4 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-3 shadow-2xl">
             <div className="mb-3 flex items-center justify-between">
               <p className="text-[15px] font-semibold">All pages</p>
@@ -147,7 +147,7 @@ export function MobileNav() {
         </div>
       )}
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-hairline bg-background/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-hairline bg-background pb-[env(safe-area-inset-bottom)] lg:hidden">
         {MOBILE_NAV.map((item) => {
           const active = isActive(pathname, item.href);
           const Icon = item.icon;

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import { CloudSun, MapPin } from "lucide-react";
 import { OWNER } from "@/config";
 import { TZ } from "@/lib/time";
@@ -26,11 +25,8 @@ export function GreetingHeader({ weather, next }: { weather: Weather | null; nex
   }, []);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-      className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
+    <div
+      className="anim-rise mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
     >
       <div>
         <h1 className="text-[30px] font-semibold leading-none text-foreground sm:text-[38px]">
@@ -62,6 +58,6 @@ export function GreetingHeader({ weather, next }: { weather: Weather | null; nex
           </div>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 }

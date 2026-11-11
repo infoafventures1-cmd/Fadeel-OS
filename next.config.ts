@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Switching back to a tab you opened in the last 30 seconds is instant (no server round trip).
+  // Your own saves still refresh it straight away.
+  experimental: { staleTimes: { dynamic: 30 } },
   // the offline service worker must always be fetched fresh so updates reach installed phones
   async headers() {
     return [

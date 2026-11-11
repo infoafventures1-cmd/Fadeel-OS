@@ -86,8 +86,18 @@ export interface SourceRow extends SourceDef {
   checkedAt: string | null;
 }
 
-/** Make sure every default source has a row (new defaults appear; the owner's enable/disable choices stay) */
-export async function syncSources() {
+let synced: Promise<void> | null = null;
+
+/** Make sure every default source has a row (new defaults appear; the owner's enable/disable choices stay). Once per server instance. */
+export function syncSources() {
+  synced ??= writeDefaultSources().catch((e) => {
+    synced = null;
+    throw e;
+  });
+  return synced;
+}
+
+async function writeDefaultSources() {
   for (const s of DEFAULT_SOURCES) {
     await sql`insert into edge_sources (id, name, kind, url, site, topic, source_type, meta)
       values (${s.id}, ${s.name}, ${s.kind}, ${s.url ?? null}, ${s.site ?? null}, ${s.topic ?? null}, ${s.sourceType}, ${JSON.stringify(s.meta ?? {})}::jsonb)

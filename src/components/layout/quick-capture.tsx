@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import { Zap, Sparkles, Check, Flag } from "lucide-react";
 import { parseCapture, type Captured } from "@/lib/capture";
 import { PROJECTS } from "@/config";
@@ -68,21 +67,14 @@ export function QuickCapture({ open, onClose }: { open: boolean; onClose: () => 
     );
 
   return (
-    <AnimatePresence>
+    <>
       {open && (
-        <motion.div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 px-4 pb-[16vh] backdrop-blur-sm sm:items-center sm:pb-0"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+        <div
+          className="anim-fade fixed inset-0 z-50 flex items-end justify-center bg-black/60 px-4 pb-[16vh] lg:backdrop-blur-sm sm:items-center sm:pb-0"
           onClick={close}
         >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.97, y: 12 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.97, y: 12 }}
-            transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-            className="glass w-full max-w-[560px] overflow-hidden rounded-2xl"
+          <div
+            className="anim-pop glass w-full max-w-[560px] overflow-hidden rounded-2xl"
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.key === "Escape" && close()}
           >
@@ -119,13 +111,10 @@ export function QuickCapture({ open, onClose }: { open: boolean; onClose: () => 
                 placeholder='"History essay next fri 2pm urgent 90m"'
                 className="w-full resize-none bg-transparent text-[15px] text-foreground placeholder:text-muted-2 focus:outline-none"
               />
-              <AnimatePresence>
+              <>
                 {v && detected && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="mt-3 overflow-hidden rounded-xl border border-hairline bg-tint/[0.03] p-3"
+                  <div
+                    className="anim-fade mt-3 overflow-hidden rounded-xl border border-hairline bg-tint/[0.03] p-3"
                   >
                     <div className="mb-2.5 flex items-center gap-1.5 text-[11px] text-accent">
                       <Sparkles size={11} />
@@ -181,9 +170,9 @@ export function QuickCapture({ open, onClose }: { open: boolean; onClose: () => 
                       </div>
                     )}
                     {asAttention && <p className="text-[12px] text-muted">Goes to Needs Your Attention on Home{v.date ? `, by ${v.date}` : ""}.</p>}
-                  </motion.div>
+                  </div>
                 )}
-              </AnimatePresence>
+              </>
               {!v && (
                 <p className="mt-2 text-[11.5px] leading-relaxed text-muted-2">
                   Understands dates (tomorrow, fri, next mon, 14 oct, in 2 weeks), times (5pm, 17:30), priority (urgent, important, whenever, !!) and
@@ -211,9 +200,9 @@ export function QuickCapture({ open, onClose }: { open: boolean; onClose: () => 
                 )}
               </button>
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       )}
-    </AnimatePresence>
+    </>
   );
 }

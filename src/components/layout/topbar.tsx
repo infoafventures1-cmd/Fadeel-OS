@@ -10,7 +10,7 @@ export function Topbar({ onOpenCommand, onOpenCapture }: { onOpenCommand: () => 
   const title = NAV_ITEMS.find((i) => isActive(pathname, i.href))?.label ?? APP_NAME;
 
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between border-b border-hairline bg-background/70 px-5 py-3 backdrop-blur-xl lg:px-8">
+    <header className="sticky top-0 z-30 flex items-center justify-between border-b border-hairline bg-background px-5 py-3 lg:bg-background/70 lg:backdrop-blur-xl lg:px-8">
       <div>
         <p className="text-[15px] font-semibold tracking-tight">{title}</p>
       </div>

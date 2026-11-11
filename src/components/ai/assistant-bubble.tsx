@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
 import { Bot, X } from "lucide-react";
 import { ASSISTANT_NAME } from "@/config";
 import { AssistantChat } from "./assistant-chat";
@@ -24,21 +23,17 @@ export function AssistantBubble() {
 
   return (
     <>
-      <AnimatePresence>
+      <>
         {open && (
-          <motion.div
-            initial={{ opacity: 0, y: 12, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 12, scale: 0.98 }}
-            transition={{ duration: 0.16 }}
-            className="glass fixed bottom-[calc(84px+env(safe-area-inset-bottom))] right-3 z-50 flex h-[min(620px,calc(100vh-120px))] w-[min(400px,calc(100vw-24px))] flex-col overflow-hidden rounded-2xl lg:bottom-24 lg:right-6"
+          <div
+            className="anim-pop glass fixed bottom-[calc(84px+env(safe-area-inset-bottom))] right-3 z-50 flex h-[min(620px,calc(100vh-120px))] w-[min(400px,calc(100vw-24px))] flex-col overflow-hidden rounded-2xl lg:bottom-24 lg:right-6"
             role="dialog"
             aria-label={ASSISTANT_NAME}
           >
             <AssistantChat compact />
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
+      </>
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? `Close ${ASSISTANT_NAME}` : `Open ${ASSISTANT_NAME}`}

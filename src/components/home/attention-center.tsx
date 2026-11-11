@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useRef, useState, useTransition } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import { Check, ChevronRight, ListPlus, Plus, X } from "lucide-react";
 import type { AttentionRecord } from "@/lib/task-types";
 import { SeverityDot } from "@/components/ui/status-pill";
@@ -49,13 +48,10 @@ export function AttentionCenter({ items }: { items: AttentionRecord[] }) {
         }
       />
 
-      <AnimatePresence>
+      <>
         {adding && (
-          <motion.form
+          <form
             ref={formRef}
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
             action={(f) =>
               start(async () => {
                 f.set("severity", severity);
@@ -64,7 +60,7 @@ export function AttentionCenter({ items }: { items: AttentionRecord[] }) {
                 setAdding(false);
               })
             }
-            className="mb-3 overflow-hidden"
+            className="anim-fade mb-3 overflow-hidden"
           >
             <GlassCard hover={false} className="space-y-2.5 p-3.5">
               <input
@@ -106,9 +102,9 @@ export function AttentionCenter({ items }: { items: AttentionRecord[] }) {
                 </button>
               </div>
             </GlassCard>
-          </motion.form>
+          </form>
         )}
-      </AnimatePresence>
+      </>
 
       {visible.length === 0 ? (
         <GlassCard hover={false} className="px-4 py-8 text-center text-[13px] text-muted">

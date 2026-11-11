@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
 import { Search, ArrowRight, CheckSquare, FileText, Zap, GraduationCap } from "lucide-react";
 import { NAV_ITEMS } from "./nav";
 import { cn } from "@/lib/utils";
@@ -80,21 +79,14 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
   });
 
   return (
-    <AnimatePresence>
+    <>
       {open && (
-        <motion.div
-          className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 px-4 pt-[14vh] backdrop-blur-sm"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+        <div
+          className="anim-fade fixed inset-0 z-50 flex items-start justify-center bg-black/60 px-4 pt-[14vh] lg:backdrop-blur-sm"
           onClick={onClose}
         >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.97, y: -8 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.97, y: -8 }}
-            transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
-            className="glass w-full max-w-[560px] overflow-hidden rounded-2xl"
+          <div
+            className="anim-drop glass w-full max-w-[560px] overflow-hidden rounded-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-3 border-b border-hairline px-4 py-3.5">
@@ -146,9 +138,9 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
                 <kbd className="rounded border border-hairline px-1 py-0.5 font-mono">↵</kbd> open
               </span>
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       )}
-    </AnimatePresence>
+    </>
   );
 }
