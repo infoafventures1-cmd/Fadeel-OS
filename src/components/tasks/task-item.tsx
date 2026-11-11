@@ -1,19 +1,20 @@
 "use client";
 
-import { useOptimistic, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
+import { useLocal } from "@/lib/offline/use-local";
 import { Circle, CheckCircle2, Clock, Hourglass, Trash2, ExternalLink } from "lucide-react";
 import type { TaskRecord } from "@/lib/task-types";
 import { PriorityBadge } from "@/components/ui/status-pill";
 import { projectByKey } from "@/config";
 import { dueInDays, formatDue } from "@/lib/time";
 import { cn } from "@/lib/utils";
-import { deleteTaskAction, toggleTaskAction, updateTaskAction } from "@/app/actions";
+import { deleteTaskAction, toggleTaskAction, updateTaskAction } from "@/lib/offline/actions";
 import { TaskFields } from "./task-form";
 
 export function TaskItem({ task, editable = true }: { task: TaskRecord; editable?: boolean }) {
   const [editing, setEditing] = useState(false);
   const [pending, start] = useTransition();
-  const [done, setDone] = useOptimistic(task.status === "done");
+  const [done, setDone] = useLocal(task.status === "done");
   const project = projectByKey(task.project);
   const overdue = !done && task.deadline && dueInDays(task.deadline) < 0;
 

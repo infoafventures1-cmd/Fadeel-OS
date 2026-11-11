@@ -5,10 +5,15 @@ import { CheckCircle2, Circle, Coffee, MapPin } from "lucide-react";
 import type { PlanBlock } from "@/lib/planner";
 import { localMinutes, fromHHMM } from "@/lib/time";
 import { projectByKey } from "@/config";
-import { toggleTaskAction } from "@/app/actions";
+import { toggleTaskAction } from "@/lib/offline/actions";
+import { useLocal } from "@/lib/offline/use-local";
+
+const NONE: string[] = [];
 import { cn } from "@/lib/utils";
 
-export function DayTimeline({ blocks, doneIds = [], isToday = true }: { blocks: PlanBlock[]; doneIds?: string[]; isToday?: boolean }) {
+export function DayTimeline({ blocks, doneIds = NONE, isToday = true }: { blocks: PlanBlock[]; doneIds?: string[]; isToday?: boolean }) {
+  // ticks stay ticked even when the change was saved offline and hasn't reached the server yet
+  const [doneNow, setDone] = useLocal(doneIds);
   const [, start] = useTransition();
   const now = localMinutes();
   if (blocks.length === 0) return <p className="py-6 text-center text-[13px] text-muted">Nothing scheduled.</p>;
@@ -20,7 +25,7 @@ export function DayTimeline({ blocks, doneIds = [], isToday = true }: { blocks: 
         const e = fromHHMM(b.end);
         const live = isToday && s <= now && now < e;
         const past = isToday && e <= now;
-        const done = b.taskId ? doneIds.includes(b.taskId) : false;
+        const done = b.taskId ? doneNow.includes(b.taskId) : false;
         const project = b.project ? projectByKey(b.project) : undefined;
         return (
           <li key={b.id} className={cn("relative", past && !live && "opacity-50")}>
@@ -70,7 +75,11 @@ export function DayTimeline({ blocks, doneIds = [], isToday = true }: { blocks: 
               {b.taskId && (
                 <button
                   aria-label={done ? "Mark not done" : "Mark done"}
-                  onClick={() => start(() => toggleTaskAction(b.taskId!, !done))}
+                  onClick={() => {
+                    const id = b.taskId!;
+                    setDone((d) => (done ? d.filter((x) => x !== id) : [...d, id]));
+                    start(() => toggleTaskAction(id, !done));
+                  }}
                   className="text-muted-2 hover:text-accent"
                 >
                   {done ? <CheckCircle2 size={16} className="text-emerald" /> : <Circle size={16} />}

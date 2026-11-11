@@ -1,6 +1,7 @@
 "use client";
 
-import { useOptimistic, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
+import { useLocal } from "@/lib/offline/use-local";
 import { Check, ChevronDown, GraduationCap, Plus, Trash2, X } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
 import {
@@ -8,7 +9,7 @@ import {
   deleteApplicationAction,
   saveApplicationStepsAction,
   updateApplicationAction,
-} from "@/app/academics-actions";
+} from "@/lib/offline/actions";
 import { TIERS, dayMonth, daysUntilDay, stepId, type AppStep, type Application, type Tier } from "@/lib/academics";
 import { cn } from "@/lib/utils";
 import { fieldClass } from "./topic-status";
@@ -206,7 +207,7 @@ function ApplicationRow({ app, regions }: { app: Application; regions: string[] 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [pending, start] = useTransition();
-  const [steps, setSteps] = useOptimistic(app.steps);
+  const [steps, setSteps] = useLocal(app.steps);
   const [newStep, setNewStep] = useState("");
   const [notes, setNotes] = useState(app.notes);
   const done = steps.filter((s) => s.done).length;

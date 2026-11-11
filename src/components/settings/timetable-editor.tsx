@@ -4,7 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { Plus, X } from "lucide-react";
 import type { TimetableSlot } from "@/lib/task-types";
 import { GlassCard } from "@/components/ui/glass-card";
-import { addTimetableSlotAction, deleteTimetableSlotAction } from "@/app/actions";
+import { addTimetableSlotAction, deleteTimetableSlotAction } from "@/lib/offline/actions";
 import { cn } from "@/lib/utils";
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];

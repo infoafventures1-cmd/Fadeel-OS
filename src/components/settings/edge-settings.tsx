@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { CheckCircle2, Circle, Loader2, Plus, RefreshCw, Trash2, XCircle } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
-import { addSourceAction, checkSourcesAction, removeSourceAction, saveEdgeSettingsAction, toggleSourceAction } from "@/app/edge-actions";
+import { addSourceAction, checkSourcesAction, removeSourceAction, saveEdgeSettingsAction, toggleSourceAction } from "@/lib/offline/actions";
 import { TOPICS, type EdgeSettings as Settings } from "@/lib/edge";
 import { cn } from "@/lib/utils";
 

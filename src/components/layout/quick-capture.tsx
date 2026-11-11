@@ -6,7 +6,7 @@ import { Zap, Sparkles, Check, Flag } from "lucide-react";
 import { parseCapture, type Captured } from "@/lib/capture";
 import { PROJECTS } from "@/config";
 import { PRIORITIES } from "@/lib/task-types";
-import { addAttentionAction, createTaskAction } from "@/app/actions";
+import { addAttentionAction, createTaskAction } from "@/lib/offline/actions";
 import { cn } from "@/lib/utils";
 
 const field =

@@ -8,7 +8,7 @@ import type { AttentionRecord } from "@/lib/task-types";
 import { SeverityDot } from "@/components/ui/status-pill";
 import { GlassCard } from "@/components/ui/glass-card";
 import { SectionHeader } from "@/components/ui/section-header";
-import { addAttentionAction, attentionToTaskAction, resolveAttentionAction, toggleTaskAction } from "@/app/actions";
+import { addAttentionAction, attentionToTaskAction, resolveAttentionAction, toggleTaskAction } from "@/lib/offline/actions";
 import { formatDue, localToISO } from "@/lib/time";
 import { cn } from "@/lib/utils";
 

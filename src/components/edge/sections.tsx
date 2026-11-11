@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowDown, ArrowRight, BookOpen, Check, Clock, Loader2, PlayCircle, RefreshCw, X } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
-import { refreshEdgeAction, reviewAction, weeklyAction } from "@/app/edge-actions";
+import { refreshEdgeAction, reviewAction, weeklyAction } from "@/lib/offline/actions";
 import type { BriefingData, Concept, EdgeItem, WeeklyData } from "@/lib/edge";
 import { cn } from "@/lib/utils";
 import { AccessBadge, SourceLine } from "./meta";

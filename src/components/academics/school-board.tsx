@@ -9,7 +9,7 @@ import {
   deleteSubjectAction,
   deleteTopicAction,
   updateSubjectAction,
-} from "@/app/academics-actions";
+} from "@/lib/offline/actions";
 import { LEVELS, SUBJECT_COLORS, dayMonth, shortUntil, daysUntilDay, type Subject } from "@/lib/academics";
 import { cn } from "@/lib/utils";
 import { TopicStatusPicker, fieldClass } from "./topic-status";

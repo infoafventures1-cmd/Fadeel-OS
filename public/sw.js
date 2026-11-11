@@ -3,7 +3,7 @@
 // - Pages: always fetched fresh when online; the last good copy is kept and shown when offline.
 // - Never cached: API calls, sign-in pages, and anything that isn't a plain GET.
 // - Signing out clears the saved pages from the device.
-const VERSION = "v1";
+const VERSION = "v2";
 const STATIC = `fos-static-${VERSION}`;
 const PAGES = `fos-pages-${VERSION}`;
 const OFFLINE = "/offline.html";
@@ -34,7 +34,20 @@ async function savePage(url, res) {
   if (!cacheable(res) || NO_CACHE.test(new URL(url).pathname)) return;
   if (!(res.headers.get("content-type") || "").includes("text/html")) return;
   const cache = await caches.open(PAGES);
-  await cache.put(pageKey(url), res);
+  await cache.put(pageKey(url), res.clone());
+  // also keep the code and styles the page needs, so its buttons work offline even if it was never opened online
+  const html = await res.text();
+  const assets = [...new Set(html.match(/\/_next\/static\/[^"'\s)\\]+/g) || [])];
+  const stat = await caches.open(STATIC);
+  await Promise.all(
+    assets.map(async (a) => {
+      if (await stat.match(a)) return;
+      try {
+        const r = await fetch(a);
+        if (cacheable(r)) await stat.put(a, r);
+      } catch {}
+    })
+  );
 }
 
 self.addEventListener("fetch", (event) => {

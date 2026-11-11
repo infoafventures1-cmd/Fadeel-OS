@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { BookOpenCheck, ChevronDown, GraduationCap, HelpCircle, Lightbulb, Sparkles } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
-import { connectAction, learnedAction, simplerAction } from "@/app/edge-actions";
+import { connectAction, learnedAction, simplerAction } from "@/lib/offline/actions";
 import type { EdgeItem, Lever, Story } from "@/lib/edge";
 import { cn } from "@/lib/utils";
 import { AccessBadge, SourceLine, TopicChip, TypeBadge } from "./meta";

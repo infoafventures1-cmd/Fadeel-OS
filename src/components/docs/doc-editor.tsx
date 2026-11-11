@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { ArrowLeft, Check, Copy, Download, Trash2, Wand2, Sparkles, Loader2, Undo2, X } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
-import { deleteDocAction, saveDocAction } from "@/app/actions";
+import { deleteDocAction, saveDocAction } from "@/lib/offline/actions";
 import { askAI, ModelPicker, Sources, useModelChoice, type ModelInfo } from "@/components/ai/model-picker";
 import type { Doc } from "@/lib/server/docs";
 import { cn } from "@/lib/utils";
@@ -34,7 +34,7 @@ interface Result {
 export function DocEditor({ doc, models }: { doc: Doc; models: ModelInfo[] }) {
   const [title, setTitle] = useState(doc.title);
   const [content, setContent] = useState(doc.content);
-  const [status, setStatus] = useState<"saved" | "saving" | "unsaved">("saved");
+  const [status, setStatus] = useState<"saved" | "saving" | "unsaved" | "device">("saved");
   const [sel, setSel] = useState({ start: 0, end: 0 });
   const [copied, setCopied] = useState(false);
   const [, start] = useTransition();
@@ -58,7 +58,7 @@ export function DocEditor({ doc, models }: { doc: Doc; models: ModelInfo[] }) {
     const t = setTimeout(async () => {
       setStatus("saving");
       await saveDocAction(doc.id, title, content);
-      setStatus("saved");
+      setStatus(navigator.onLine ? "saved" : "device");
     }, 900);
     return () => clearTimeout(t);
   }, [title, content, doc.id]);
@@ -118,7 +118,7 @@ export function DocEditor({ doc, models }: { doc: Doc; models: ModelInfo[] }) {
           <ArrowLeft size={13} /> Documents
         </Link>
         <span className="ml-auto font-mono text-[11px] text-muted-2">
-          {words} words{hasSel ? ` · ${selWords} selected` : ""} · {status === "saved" ? "saved" : status === "saving" ? "saving…" : "unsaved"}
+          {words} words{hasSel ? ` · ${selWords} selected` : ""} · {status === "saved" ? "saved" : status === "device" ? "saved on this phone" : status === "saving" ? "saving…" : "unsaved"}
         </span>
         <button
           onClick={() => {

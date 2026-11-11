@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Wand2, RotateCcw, Save, SkipForward, Settings2, AlertTriangle } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { DayTimeline } from "@/components/today/day-timeline";
-import { clearPlanAction, generatePlanAction, saveDayWindowAction, savePlanAction } from "@/app/actions";
+import { clearPlanAction, generatePlanAction, saveDayWindowAction, savePlanAction } from "@/lib/offline/actions";
 import type { DayWindow, PlanResult } from "@/lib/planner";
 import { addDays } from "@/lib/time";
 import { cn } from "@/lib/utils";

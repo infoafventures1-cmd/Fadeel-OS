@@ -1,7 +1,8 @@
 "use client";
 
-import { useOptimistic, useTransition } from "react";
-import { setTopicStatusAction } from "@/app/academics-actions";
+import { useTransition } from "react";
+import { useLocal } from "@/lib/offline/use-local";
+import { setTopicStatusAction } from "@/lib/offline/actions";
 import { TOPIC_STATUSES, topicStatus, type TopicStatus } from "@/lib/academics";
 import { cn } from "@/lib/utils";
 
@@ -11,7 +12,7 @@ export const fieldClass =
 /** Coloured dot + label that is also a picker: choose a new confidence level and it saves */
 export function TopicStatusPicker({ id, status, className }: { id: string; status: TopicStatus; className?: string }) {
   const [, start] = useTransition();
-  const [value, setValue] = useOptimistic(status);
+  const [value, setValue] = useLocal(status);
   const s = topicStatus(value);
 
   return (

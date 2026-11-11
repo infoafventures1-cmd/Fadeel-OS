@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState, useTransition } from "rea
 import Link from "next/link";
 import { ArrowLeft, Check, Copy, Download, Trash2, Plus, X, Loader2, Undo2, ArrowUp, GraduationCap } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
-import { deletePlanAction, saveBusinessPlanAction } from "@/app/actions";
+import { deletePlanAction, saveBusinessPlanAction } from "@/lib/offline/actions";
 import { askAI, ModelPicker, Sources, useModelChoice, type ModelInfo } from "@/components/ai/model-picker";
 import { PLAN_HINT, planToMarkdown, sectionId, type Plan, type PlanChatMsg, type PlanSection } from "@/lib/plan-template";
 import { cn } from "@/lib/utils";
@@ -30,7 +30,7 @@ export function PlanEditor({ plan, models }: { plan: Plan; models: ModelInfo[] }
   const [idea, setIdea] = useState(plan.idea);
   const [sections, setSections] = useState<PlanSection[]>(plan.sections);
   const [chat, setChat] = useState<PlanChatMsg[]>(plan.chat);
-  const [status, setStatus] = useState<"saved" | "saving" | "unsaved">("saved");
+  const [status, setStatus] = useState<"saved" | "saving" | "unsaved" | "device">("saved");
   const [copied, setCopied] = useState(false);
   const [confirmSec, setConfirmSec] = useState<string | null>(null);
   const [, start] = useTransition();
@@ -55,7 +55,7 @@ export function PlanEditor({ plan, models }: { plan: Plan; models: ModelInfo[] }
     const t = setTimeout(async () => {
       setStatus("saving");
       await saveBusinessPlanAction(plan.id, title, idea, sections);
-      setStatus("saved");
+      setStatus(navigator.onLine ? "saved" : "device");
     }, 900);
     return () => clearTimeout(t);
   }, [title, idea, sections, plan.id]);
@@ -91,7 +91,7 @@ export function PlanEditor({ plan, models }: { plan: Plan; models: ModelInfo[] }
       setChat(r.chat);
       setChanged(new Set(r.changed));
       setUndo(r.count ? { ...before, count: r.count } : null);
-      setStatus("saved");
+      setStatus(navigator.onLine ? "saved" : "device");
     } catch (e) {
       setChat((c) => [...c, { role: "assistant", content: e instanceof Error ? e.message : "Something went wrong.", error: true }]);
     } finally {
@@ -108,7 +108,7 @@ export function PlanEditor({ plan, models }: { plan: Plan; models: ModelInfo[] }
           <ArrowLeft size={13} /> Plans
         </Link>
         <span className="ml-auto font-mono text-[11px] text-muted-2">
-          {filled}/{sections.length} sections · {words} words · {status === "saved" ? "saved" : status === "saving" ? "saving…" : "unsaved"}
+          {filled}/{sections.length} sections · {words} words · {status === "saved" ? "saved" : status === "device" ? "saved on this phone" : status === "saving" ? "saving…" : "unsaved"}
         </span>
         <button
           onClick={() => {

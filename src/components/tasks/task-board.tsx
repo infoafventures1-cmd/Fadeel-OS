@@ -6,7 +6,7 @@ import { PROJECTS } from "@/config";
 import { dueInDays, localDate } from "@/lib/time";
 import { GlassCard } from "@/components/ui/glass-card";
 import { cn } from "@/lib/utils";
-import { createTaskAction } from "@/app/actions";
+import { createTaskAction } from "@/lib/offline/actions";
 import { QuickAddTask } from "./task-form";
 import { TaskItem } from "./task-item";
 

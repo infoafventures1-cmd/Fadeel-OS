@@ -1,8 +1,9 @@
 "use client";
 
-import { useOptimistic, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
+import { useLocal } from "@/lib/offline/use-local";
 import { Bookmark, BookmarkCheck, Check, Circle, ThumbsDown, ThumbsUp, PenLine } from "lucide-react";
-import { feedbackAction, readItemAction, saveItemAction, takeawayAction } from "@/app/edge-actions";
+import { feedbackAction, readItemAction, saveItemAction, takeawayAction } from "@/lib/offline/actions";
 import { cn } from "@/lib/utils";
 
 const btn = "inline-flex items-center gap-1 rounded-lg border border-hairline px-2 py-1 text-[11.5px] text-muted transition hover:border-hairline-strong hover:text-foreground disabled:opacity-50";
@@ -10,8 +11,8 @@ const btn = "inline-flex items-center gap-1 rounded-lg border border-hairline px
 /** Save, mark read, more/less like this. Optimistic, then saved on the server. */
 export function ItemActions({ id, saved, read, compact = false }: { id: string; saved: boolean; read: boolean; compact?: boolean }) {
   const [, start] = useTransition();
-  const [s, setS] = useOptimistic(saved);
-  const [r, setR] = useOptimistic(read);
+  const [s, setS] = useLocal(saved);
+  const [r, setR] = useLocal(read);
   const [fb, setFb] = useState<1 | -1 | 0>(0);
   return (
     <div className="flex flex-wrap items-center gap-1.5">

@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { Lightbulb, NotebookPen, Plus, School, Trash2 } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
-import { createNoteAction, deleteNoteAction, updateNoteAction } from "@/app/academics-actions";
+import { createNoteAction, deleteNoteAction, updateNoteAction } from "@/lib/offline/actions";
 import type { AcademicNote, Subject } from "@/lib/academics";
 import { TZ } from "@/lib/time";
 import { cn } from "@/lib/utils";

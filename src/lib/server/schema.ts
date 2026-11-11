@@ -123,6 +123,13 @@ export const SCHEMA: string[] = [
     updated_at timestamptz not null default now()
   )`,
 
+  // Changes made offline and sent later: one receipt per change, so a change sent twice is applied once
+  `create table if not exists offline_receipts (
+    id text primary key,
+    name text not null,
+    at timestamptz not null default now()
+  )`,
+
   /* ---------------- daily edge ---------------- */
   // Single-user app: every row belongs to the one signed-in owner, so there is no user column.
 
