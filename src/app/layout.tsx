@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Inter, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import { APP_NAME } from "@/config";
+import { OfflineSupport } from "@/components/layout/offline";
 import "./globals.css";
 
 const bricolage = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-bricolage" });
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body className="min-h-full font-sans antialiased">
         <div className="noise-overlay" />
+        <OfflineSupport />
         {children}
       </body>
     </html>

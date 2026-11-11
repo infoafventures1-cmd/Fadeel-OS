@@ -27,5 +27,5 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   // the app manifest and icons must load before sign-in, so the phone can install the app
-  matcher: ["/((?!_next/static|_next/image|favicon|mark\\.svg|robots\\.txt|manifest\\.webmanifest|apple-touch-icon\\.png|icon-[a-z0-9-]+\\.png).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon|mark\\.svg|robots\\.txt|manifest\\.webmanifest|sw\\.js|offline\\.html|apple-touch-icon\\.png|icon-[a-z0-9-]+\\.png).*)"],
 };

@@ -6,6 +6,7 @@ import { Topbar } from "@/components/layout/topbar";
 import { CommandPalette } from "@/components/layout/command-palette";
 import { QuickCapture } from "@/components/layout/quick-capture";
 import { AssistantBubble } from "@/components/ai/assistant-bubble";
+import { OfflineBanner } from "@/components/layout/offline";
 
 export default function ShellLayout({ children }: { children: React.ReactNode }) {
   const [commandOpen, setCommandOpen] = useState(false);
@@ -36,6 +37,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
       <Sidebar onOpenCommand={() => setCommandOpen(true)} />
       <div className="flex min-h-screen min-w-0 flex-1 flex-col">
         <Topbar onOpenCommand={() => setCommandOpen(true)} onOpenCapture={() => setCaptureOpen(true)} />
+        <OfflineBanner />
         <main className="scrollbar-thin flex-1 overflow-y-auto px-5 pb-24 pt-6 lg:px-8 lg:py-7">{children}</main>
       </div>
       <CommandPalette open={commandOpen} onClose={() => setCommandOpen(false)} />
