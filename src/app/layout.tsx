@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Inter, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import { APP_NAME } from "@/config";
 import "./globals.css";
@@ -11,8 +11,21 @@ const jetbrains = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrai
 export const metadata: Metadata = {
   title: APP_NAME,
   description: "Fadeel's personal command center for work, academics, business and life.",
-  icons: { icon: "/mark.svg" },
+  icons: { icon: "/mark.svg", apple: "/apple-touch-icon.png" },
   robots: { index: false, follow: false },
+  // Installed on an iPhone home screen it opens full screen, named "Fadeel OS"
+  appleWebApp: { capable: true, title: "Fadeel OS", statusBarStyle: "default" },
+  formatDetection: { telephone: false },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  // stops iPhone zooming in each time a text box is tapped; pinch-zoom still works on iOS
+  maximumScale: 1,
+  // content runs edge to edge; the tab bar and buttons already pad for the home indicator
+  viewportFit: "cover",
+  themeColor: "#f3f0e8",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
