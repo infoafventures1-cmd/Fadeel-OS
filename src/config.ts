@@ -70,6 +70,8 @@ export interface AiModel {
   openrouter: string;
   /** One line shown under the picker */
   note?: string;
+  /** Provider model ids tried in order when the main one is busy or rate-limited (direct key only) */
+  fallbacks?: string[];
 }
 
 /**
@@ -84,7 +86,8 @@ export const AI_MODELS: AiModel[] = [
   { id: "claude-haiku", label: "Claude Haiku", provider: "anthropic", model: "claude-haiku-4-5-20251001", openrouter: "anthropic/claude-haiku-4.5", note: "Fast and cheap" },
   { id: "gpt", label: "ChatGPT (GPT-5.5)", provider: "openai", model: "gpt-5.5", openrouter: "openai/gpt-5.5" },
   { id: "gpt-mini", label: "ChatGPT (GPT-4.1 mini)", provider: "openai", model: "gpt-4.1-mini", openrouter: "openai/gpt-4.1-mini", note: "Fast and cheap" },
-  { id: "gemini", label: "Gemini Flash", provider: "google", model: "gemini-3.8-flash", openrouter: "google/gemini-3.8-flash" },
+  // Free tier (checked Nov 2026): 3.5 Flash answers reliably; the newest, 3.8 Flash, was often busy or slow, so it is the last resort
+  { id: "gemini", label: "Gemini Flash", provider: "google", model: "gemini-3.5-flash", openrouter: "google/gemini-3.5-flash", fallbacks: ["gemini-flash-lite-latest", "gemini-3.8-flash"], note: "Free with a Google AI Studio key" },
   { id: "perplexity", label: "Perplexity Sonar Pro", provider: "perplexity", model: "sonar-pro", openrouter: "perplexity/sonar-pro", note: "Searches the web and cites sources" },
   { id: "perplexity-fast", label: "Perplexity Sonar", provider: "perplexity", model: "sonar", openrouter: "perplexity/sonar", note: "Web search, faster" },
 ];

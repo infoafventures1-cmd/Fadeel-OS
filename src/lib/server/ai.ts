@@ -28,7 +28,15 @@ const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : 0
 const testOrigin = !process.env.VERCEL && process.env.EDGE_TEST_ORIGIN ? process.env.EDGE_TEST_ORIGIN : "";
 const target = (url: string) => (testOrigin ? `${testOrigin}/${url.replace(/^https?:\/\//, "")}` : url);
 
-export class AiError extends Error {}
+export class AiError extends Error {
+  constructor(message: string, public status = 0) {
+    super(message);
+  }
+}
+
+/** Busy, overloaded or rate-limited: worth trying again or trying another model */
+const temporary = (e: unknown) => e instanceof AiError && [429, 500, 502, 503, 504].includes(e.status);
+const pause = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 const KEY_ENV: Record<AiProvider, string> = {
   anthropic: "ANTHROPIC_API_KEY",
@@ -78,29 +86,30 @@ function explain(status: number, body: unknown, who: string) {
   if (status === 402) return `${who} says the account is out of credit.`;
   if (status === 404 || /model/i.test(msg)) return `${who} doesn't recognise this model id. Update it in src/config.ts. (${msg.slice(0, 160)})`;
   if (status === 429) return `${who} is rate-limiting you. Wait a minute and try again.`;
+  if (status === 503) return `${who} is busy right now. Try again in a minute.`;
   return `${who} error ${status}${msg ? `: ${msg.slice(0, 200)}` : ""}`;
 }
 
-async function post(url: string, headers: Record<string, string>, body: unknown, who: string) {
+async function post(url: string, headers: Record<string, string>, body: unknown, who: string, timeoutMs = 115_000) {
   let res: Response;
   try {
     res = await fetch(target(url), {
       method: "POST",
       headers: { "Content-Type": "application/json", ...headers },
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(115_000),
+      signal: AbortSignal.timeout(timeoutMs),
     });
   } catch (e) {
-    throw new AiError(e instanceof Error && e.name === "TimeoutError" ? `${who} took too long to answer. Try a faster model or ask for less.` : `Couldn't reach ${who}.`);
+    throw new AiError(e instanceof Error && e.name === "TimeoutError" ? `${who} took too long to answer. Try a faster model or ask for less.` : `Couldn't reach ${who}.`, e instanceof Error && e.name === "TimeoutError" ? 504 : 0);
   }
   const json = await res.json().catch(() => ({}));
-  if (!res.ok) throw new AiError(explain(res.status, json, who));
+  if (!res.ok) throw new AiError(explain(res.status, json, who), res.status);
   return json as Record<string, unknown>;
 }
 
 /** OpenAI, Gemini, Perplexity and OpenRouter all speak the OpenAI chat-completions format. */
-async function openaiStyle(url: string, key: string, model: string, system: string, messages: ChatMsg[], who: string, extra: Record<string, string> = {}, maxTokens?: number) {
-  const j = await post(url, { Authorization: `Bearer ${key}`, ...extra }, { model, messages: [{ role: "system", content: system }, ...messages], ...(maxTokens ? { max_tokens: maxTokens } : {}) }, who);
+async function openaiStyle(url: string, key: string, model: string, system: string, messages: ChatMsg[], who: string, extra: Record<string, string> = {}, maxTokens?: number, timeoutMs?: number) {
+  const j = await post(url, { Authorization: `Bearer ${key}`, ...extra }, { model, messages: [{ role: "system", content: system }, ...messages], ...(maxTokens ? { max_tokens: maxTokens } : {}) }, who, timeoutMs);
   const choice = (j.choices as { message?: { content?: unknown; annotations?: { url_citation?: { url?: string } }[] } }[] | undefined)?.[0];
   const content = choice?.message?.content;
   const text = typeof content === "string" ? content : Array.isArray(content) ? content.map((p: { text?: string }) => p?.text ?? "").join("") : "";
@@ -141,7 +150,23 @@ export async function complete(modelId: string, system: string, messages: ChatMs
   } else if (m.provider === "openai") {
     out = await openaiStyle("https://api.openai.com/v1/chat/completions", env(KEY_ENV.openai), m.model, system, msgs, "OpenAI", {}, mt);
   } else if (m.provider === "google") {
-    out = await openaiStyle("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", env(KEY_ENV.google), m.model, system, msgs, "Google Gemini", {}, mt);
+    // the main model, then each fallback when it's busy, rate-limited or stuck (45 s cap per attempt except the last)
+    const tries = [m.model, ...(m.fallbacks ?? [])];
+    let last: unknown = null;
+    out = null as unknown as typeof out;
+    for (const [i, model] of tries.entries()) {
+      const final = i === tries.length - 1;
+      try {
+        // no max_tokens for Gemini: its hidden "thinking" counts toward that limit and would cut answers short
+        out = await openaiStyle("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", env(KEY_ENV.google), model, system, msgs, "Google Gemini", {}, undefined, final ? 115_000 : 45_000);
+        break;
+      } catch (e) {
+        last = e;
+        if (!temporary(e) || final) throw e;
+        await pause(800);
+      }
+    }
+    if (!out) throw last;
   } else {
     out = await openaiStyle("https://api.perplexity.ai/chat/completions", env(KEY_ENV.perplexity), m.model, system, msgs, "Perplexity", {}, mt);
   }
@@ -154,10 +179,13 @@ export function looseJson(t: string): Record<string, unknown> | null {
   const tries = [t, t.match(/```(?:json)?\s*([\s\S]*?)```/)?.[1] ?? "", (() => { const a = t.indexOf("{"), b = t.lastIndexOf("}"); return a >= 0 && b > a ? t.slice(a, b + 1) : ""; })()];
   for (const s of tries) {
     if (!s) continue;
-    try {
-      const v = JSON.parse(s);
-      if (v && typeof v === "object" && !Array.isArray(v)) return v;
-    } catch {}
+    // as written, then with stray backslashes (e.g. LaTeX like \% or \frac) made safe
+    for (const text of [s, s.replace(/\\(?!["\\/bnrtu])/g, "\\\\")]) {
+      try {
+        const v = JSON.parse(text);
+        if (v && typeof v === "object" && !Array.isArray(v)) return v;
+      } catch {}
+    }
   }
   return null;
 }
