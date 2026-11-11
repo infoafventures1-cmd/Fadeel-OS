@@ -25,6 +25,20 @@ export function SchoolBoard({ subjects, initialId }: { subjects: Subject[]; init
         School <em>OS</em>
       </h1>
 
+      {/* Weekly timetable (to update it, replace public/timetable.png) */}
+      <GlassCard hover={false} className="mb-6 overflow-hidden p-3 sm:p-4">
+        <div className="mb-2 flex items-center justify-between px-1">
+          <p className="text-[11.5px] font-semibold uppercase tracking-wider text-muted">Timetable 2026–27 · Diploma 2</p>
+          <a href="/timetable.png" target="_blank" rel="noopener noreferrer" className="text-[12px] text-muted hover:text-accent">
+            Open full size
+          </a>
+        </div>
+        <a href="/timetable.png" target="_blank" rel="noopener noreferrer" className="block overflow-x-auto rounded-lg bg-white">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/timetable.png" alt="Weekly timetable for Diploma 2, 2026–27" className="mx-auto w-full min-w-[640px] max-w-[900px]" />
+        </a>
+      </GlassCard>
+
       <div className="scrollbar-thin -mx-1 mb-6 flex gap-3 overflow-x-auto px-1 pb-2">
         {subjects.map((s) => {
           const active = s.id === selected?.id;
