@@ -1,8 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Command, LogOut } from "lucide-react";
+import { Command, LayoutGrid, LogOut, X } from "lucide-react";
 import { logout } from "@/app/login/actions";
 import { Mark, AppName } from "@/components/brand/mark";
 import { OWNER } from "@/config";
@@ -79,27 +80,89 @@ export function Sidebar({ onOpenCommand }: { onOpenCommand: () => void }) {
   );
 }
 
-/** Phones and tablets have no sidebar, so the same pages sit in a tab bar along the bottom */
+/** Phones and tablets have no sidebar: four tabs along the bottom, and "More" opens every page */
 export function MobileNav() {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+  const inBar = MOBILE_NAV.some((i) => isActive(pathname, i.href));
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
+  const tab = "flex min-w-0 flex-1 flex-col items-center gap-1 py-2.5 text-[10px]";
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-hairline bg-background/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
-      {MOBILE_NAV.map((item) => {
-        const active = isActive(pathname, item.href);
-        const Icon = item.icon;
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            aria-label={item.label}
-            aria-current={active ? "page" : undefined}
-            className={cn("flex min-w-0 flex-1 flex-col items-center gap-1 py-2.5 text-[10px]", active ? "text-foreground" : "text-muted-2")}
-          >
-            <Icon size={18} className={active ? "text-accent" : undefined} />
-            <span className="max-w-full truncate px-0.5">{item.label}</span>
-          </Link>
-        );
-      })}
-    </nav>
+    <>
+      {open && (
+        <div className="fixed inset-0 z-[60] lg:hidden" role="dialog" aria-modal="true" aria-label="All pages">
+          <button aria-label="Close" onClick={() => setOpen(false)} className="absolute inset-0 bg-tint/30 backdrop-blur-[2px]" />
+          <div className="scrollbar-thin absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-2xl border-t border-hairline bg-background px-4 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-3 shadow-2xl">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-[15px] font-semibold">All pages</p>
+              <button onClick={() => setOpen(false)} aria-label="Close" className="rounded-lg p-2 text-muted hover:bg-tint/[0.05]">
+                <X size={18} />
+              </button>
+            </div>
+            <nav className="space-y-4">
+              {NAV.map((group) => (
+                <div key={group.label}>
+                  <p className="mb-1.5 px-1 text-[10.5px] font-semibold uppercase tracking-wider text-muted-2">{group.label}</p>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {group.items.map((item) => {
+                      const active = isActive(pathname, item.href);
+                      const Icon = item.icon;
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setOpen(false)}
+                          aria-current={active ? "page" : undefined}
+                          className={cn(
+                            "flex min-w-0 items-center gap-2.5 rounded-xl border px-3 py-3 text-[13.5px]",
+                            active ? "border-accent/30 bg-accent/10 text-foreground" : "border-hairline bg-tint/[0.02] text-foreground"
+                          )}
+                        >
+                          <Icon size={17} className={active ? "text-accent" : "text-muted"} />
+                          <span className="min-w-0 leading-tight">{item.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </nav>
+            <form action={logout} className="mt-4 border-t border-hairline pt-3">
+              <button className="flex items-center gap-2 px-1 py-1.5 text-[13px] text-muted-2">
+                <LogOut size={14} /> Sign out
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-hairline bg-background/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
+        {MOBILE_NAV.map((item) => {
+          const active = isActive(pathname, item.href);
+          const Icon = item.icon;
+          return (
+            <Link key={item.href} href={item.href} aria-label={item.label} aria-current={active ? "page" : undefined} className={cn(tab, active ? "text-foreground" : "text-muted-2")}>
+              <Icon size={18} className={active ? "text-accent" : undefined} />
+              <span className="max-w-full truncate px-0.5">{item.label}</span>
+            </Link>
+          );
+        })}
+        <button onClick={() => setOpen(true)} aria-label="More pages" aria-expanded={open} className={cn(tab, !inBar ? "text-foreground" : "text-muted-2")}>
+          <LayoutGrid size={18} className={!inBar ? "text-accent" : undefined} />
+          <span>More</span>
+        </button>
+      </nav>
+    </>
   );
 }

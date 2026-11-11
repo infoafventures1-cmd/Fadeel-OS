@@ -48,7 +48,7 @@ export const NAV: NavGroup[] = [
 
 export const NAV_ITEMS = NAV.flatMap((g) => g.items);
 
-/** The phone tab bar (six fit at phone width) */
-export const MOBILE_NAV = ["/home", "/edge", "/tasks", "/assistant", "/docs", "/plans"].map((h) => NAV_ITEMS.find((i) => i.href === h)!);
+/** The phone tab bar: four favourites, then "More", which opens every page grouped as in the sidebar */
+export const MOBILE_NAV = ["/home", "/edge", "/tasks", "/academics/school"].map((h) => NAV_ITEMS.find((i) => i.href === h)!);
 
 export const isActive = (pathname: string, href: string) => pathname === href || pathname.startsWith(href + "/");
